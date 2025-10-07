@@ -1,0 +1,7 @@
+# Copy this file to `application-oauth.properties` and provide real Google OAuth credentials.
+# The file is imported automatically thanks to `spring.config.import` in application.yml.
+# Never commit the file with real secrets.
+
+spring.security.oauth2.client.registration.google.client-id=your-google-client-id.apps.googleusercontent.com
+spring.security.oauth2.client.registration.google.client-secret=your-google-client-secret
+spring.security.oauth2.client.registration.google.redirect-uri=http://localhost:8080/api/login/oauth2/code/google

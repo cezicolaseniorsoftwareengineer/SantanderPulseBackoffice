@@ -1,0 +1,121 @@
+# Santander Pulse Backend Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+  oauth2:
+    callback-path: /oauth2/callback
+  bootstrap:
+    default-admin:
+      enabled: ${APP_BOOTSTRAP_DEFAULT_ADMIN_ENABLED:true}
+      cpf: ${APP_BOOTSTRAP_DEFAULT_ADMIN_CPF:11122233344}
+      password: ${APP_BOOTSTRAP_DEFAULT_ADMIN_PASSWORD:admin123}
+      email: ${APP_BOOTSTRAP_DEFAULT_ADMIN_EMAIL:admin@santander.com}
+      full-name: ${APP_BOOTSTRAP_DEFAULT_ADMIN_FULLNAME:Santander Pulse Admin}
+
+pulse:
+  seed-data:
+    enabled: ${PULSE_SEED_DATA_ENABLED:false}
+
+spring:
+  config:
+    import: optional:classpath:application-oauth.properties
+  application:
+    name: santander-pulse-backend
+  
+  # H2 Database Configuration
+  datasource:
+    url: jdbc:h2:mem:pulsedb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: pulse_user
+    password: pulse_secure_password_2025
+    driver-class-name: org.h2.Driver
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  
+  # Security Configuration
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:demo-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:demo-google-client-secret}
+            scope:
+              - openid
+              - profile
+              - email
+            client-name: Google
+            authorization-grant-type: authorization_code
+            redirect-uri: "${GOOGLE_REDIRECT_URI:http://localhost:8080/api/login/oauth2/code/google}"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+
+# JWT Configuration
+jwt:
+  secret: U2FudGFuZGVyUHVsc2VTZWNyZXRLZXkyMDI1VmVyeVNlY3VyZUFuZEF1dGhlbnRpY0tleUZvckJhbmtpbmdTeXN0ZW0=
+  expiration: 86400000 # 24 hours
+  refresh-expiration: 604800000 # 7 days
+
+# Logging Configuration
+logging:
+  level:
+    com.santander.pulse: INFO
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management and Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# API Documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    disable-swagger-default-url: true
+
+# Banking Validation
+banking:
+  validation:
+    cpf:
+      enabled: true
+      strict-format: true
+    cnpj:
+      enabled: true
+      strict-format: true
+  audit:
+    enabled: true
+    log-level: INFO
