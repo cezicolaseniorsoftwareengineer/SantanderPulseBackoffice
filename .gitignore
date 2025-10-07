@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+build/
+*.js.map
+santander-pulse-backend/target/
+
+# Spring secrets
+**/application-oauth.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+*.lcov
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Windows screenshot temp paths (SOLUÇÃO PARA SEU PROBLEMA)
+**/TempState/ScreenClip/**
+**/{*}.png
+
+# Angular specific
+.angular/
+.sass-cache/

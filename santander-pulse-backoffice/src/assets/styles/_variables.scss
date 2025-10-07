@@ -1,0 +1,111 @@
+// ============================================
+// SANTANDER BANK DESIGN SYSTEM - OFFICIAL
+// ============================================
+
+// Primary Brand Colors (Santander Official Palette)
+$santander-red: #EC0000;
+$santander-red-dark: #C40000;
+$santander-red-darker: #8B0000;
+$santander-red-light: #FF1A1A;
+$santander-red-lighter: #FF4D4D;
+
+// Gradient Backgrounds (Santander Style)
+$gradient-red: linear-gradient(135deg, #EC0000 0%, #C40000 100%);
+$gradient-red-dark: linear-gradient(135deg, #C40000 0%, #8B0000 100%);
+$gradient-header: linear-gradient(90deg, #EC0000 0%, #D10000 50%, #EC0000 100%);
+
+// Neutral Grays (Corporate Palette)
+$white: #FFFFFF;
+$gray-50: #FAFAFA;
+$gray-100: #F5F5F5;
+$gray-200: #EEEEEE;
+$gray-300: #E0E0E0;
+$gray-400: #BDBDBD;
+$gray-500: #9E9E9E;
+$gray-600: #757575;
+$gray-700: #616161;
+$gray-800: #424242;
+$gray-900: #222222;
+$black: #000000;
+
+// Semantic Colors (Banking Standard)
+$success: #28A745;
+$success-light: #D4EDDA;
+$warning: #FFC107;
+$warning-light: #FFF3CD;
+$error: #DC3545;
+$error-light: #F8D7DA;
+$info: #0066CC;
+$info-light: #D1ECF1;
+
+// Status Colors
+$status-active: #28A745;
+$status-inactive: #DC3545;
+$status-suspended: #FFC107;
+
+// Typography (Santander Corporate Font)
+$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+$font-family-heading: 'Segoe UI', Arial, sans-serif;
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-base: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-2xl: 24px;
+$font-size-3xl: 30px;
+$font-size-4xl: 36px;
+$line-height-base: 1.5;
+$line-height-heading: 1.2;
+
+// Font Weights
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Spacing System (8px base)
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+$spacing-3xl: 64px;
+
+// Border Radius
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+$border-radius-pill: 50px;
+
+// Shadows (Material Design Inspired)
+$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+$shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+$shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.2);
+$shadow-red: 0 4px 12px rgba(236, 0, 0, 0.25);
+
+// Transitions
+$transition-fast: 150ms ease-in-out;
+$transition-base: 250ms ease-in-out;
+$transition-slow: 350ms ease-in-out;
+
+// Z-index Layers
+$z-dropdown: 1000;
+$z-sticky: 1020;
+$z-fixed: 1030;
+$z-modal-backdrop: 1040;
+$z-modal: 1050;
+$z-popover: 1060;
+$z-tooltip: 1070;
+$transition-base: 250ms ease-in-out;
+$transition-slow: 350ms ease-in-out;
+
+// Z-index
+$z-index-modal: 1000;
+$z-index-dropdown: 900;
+$z-index-sticky: 800;
+$z-index-fixed: 700;

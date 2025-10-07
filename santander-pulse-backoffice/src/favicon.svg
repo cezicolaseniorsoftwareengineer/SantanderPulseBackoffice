@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background circle - Santander Red -->
+  <circle cx="32" cy="32" r="32" fill="#EC0000"/>
+  
+  <!-- Pulse wave effect - White -->
+  <path d="M10 32 L16 32 L20 20 L24 44 L28 28 L32 32 L36 28 L40 44 L44 20 L48 32 L54 32" 
+        stroke="#FFFFFF" 
+        stroke-width="3" 
+        fill="none" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  
+  <!-- Banking icon - Dollar sign -->
+  <circle cx="32" cy="48" r="8" fill="#FFFFFF"/>
+  <text x="32" y="53" 
+        font-family="Arial, sans-serif" 
+        font-size="10" 
+        font-weight="bold" 
+        fill="#EC0000" 
+        text-anchor="middle">$</text>
+</svg>

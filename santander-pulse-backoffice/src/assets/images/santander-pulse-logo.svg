@@ -1,0 +1,23 @@
+<!-- Santander Pulse Logo - SVG Icon -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="santander-pulse-logo">
+  <!-- Outer Circle (Santander Red) -->
+  <circle cx="50" cy="50" r="45" fill="#EC0000" opacity="0.1"/>
+  
+  <!-- Middle Pulse Ring -->
+  <circle cx="50" cy="50" r="35" fill="none" stroke="#EC0000" stroke-width="2" opacity="0.3">
+    <animate attributeName="r" values="30;38;30" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Inner Pulse Ring -->
+  <circle cx="50" cy="50" r="25" fill="none" stroke="#EC0000" stroke-width="3" opacity="0.6">
+    <animate attributeName="r" values="20;28;20" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+  </circle>
+  
+  <!-- Core Circle -->
+  <circle cx="50" cy="50" r="18" fill="#EC0000"/>
+  
+  <!-- Letter P (Pulse) -->
+  <text x="50" y="62" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="white" text-anchor="middle">P</text>
+</svg>
