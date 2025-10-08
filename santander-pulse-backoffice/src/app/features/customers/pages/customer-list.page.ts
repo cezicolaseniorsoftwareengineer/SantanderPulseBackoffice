@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CustomerService } from '../services/customer.service';
@@ -17,6 +17,7 @@ import { NotificationService } from '../../../core/services/notification.service
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     UiTableComponent,
     UiInputComponent,
     UiButtonComponent,
@@ -61,13 +62,24 @@ import { NotificationService } from '../../../core/services/notification.service
         </div>
       </div>
 
-      <!-- Search - VERSÃO SIMPLES -->
+      <!-- Search & Filter Section -->
       <div class="search-section">
-        <ui-input
-          [control]="searchControl"
-          placeholder="Buscar cliente..."
-          label="Buscar"
-        ></ui-input>
+        <div class="search-row">
+          <ui-input
+            [control]="searchControl"
+            placeholder="Buscar cliente..."
+            label="Buscar"
+          ></ui-input>
+          
+          <div class="filter-group">
+            <label class="filter-label">Filtrar por Status:</label>
+            <select class="status-filter" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+              <option value="">Todos os clientes</option>
+              <option value="ATIVO">Apenas Ativos</option>
+              <option value="INATIVO">Apenas Inativos</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <!-- Customers Table -->
@@ -288,9 +300,51 @@ import { NotificationService } from '../../../core/services/notification.service
       margin-bottom: $spacing-lg;
     }
 
+    .search-row {
+      display: flex;
+      gap: $spacing-lg;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
     .search-bar {
       position: relative;
       max-width: 500px;
+      flex: 1;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+      min-width: 200px;
+    }
+
+    .filter-label {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $gray-700;
+    }
+
+    .status-filter {
+      padding: $spacing-sm $spacing-md;
+      border: 2px solid $gray-300;
+      border-radius: $border-radius-md;
+      font-size: $font-size-base;
+      background: $white;
+      color: $gray-700;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:focus {
+        outline: none;
+        border-color: $santander-red;
+        box-shadow: 0 0 0 3px rgba(236, 0, 50, 0.1);
+      }
+
+      &:hover {
+        border-color: $gray-400;
+      }
     }
 
     .search-icon {
@@ -596,6 +650,9 @@ export class CustomerListPage implements OnInit {
   editingCustomer: Customer | null = null;
   searchControl = new FormControl('');
 
+  // Filtro de status para resolver o problema do cliente "desaparecido"
+  statusFilter: string = '';
+
   // Modal de confirmação de exclusão
   showDeleteConfirm = false;
   customerToDelete: Customer | null = null;
@@ -627,7 +684,7 @@ export class CustomerListPage implements OnInit {
     private customerService: CustomerService,
     private notification: NotificationService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -649,7 +706,6 @@ export class CustomerListPage implements OnInit {
       page: this.currentPage,
       size: this.pageSize,
       sort: `${this.sortField},${this.sortDirection}`
-      // Removido o filtro status: 'ATIVO' para mostrar todos os clientes
     };
 
     const searchValue = this.searchControl.value?.trim();
@@ -657,16 +713,35 @@ export class CustomerListPage implements OnInit {
       params.q = searchValue;
     }
 
+    // 🎯 SOLUÇÃO: Aplicar filtro de status quando selecionado
+    if (this.statusFilter) {
+      params.status = this.statusFilter;
+      console.log(`🔍 [STATUS FILTER] Carregando apenas clientes: ${this.statusFilter}`);
+    } else {
+      console.log('🔍 [STATUS FILTER] Carregando TODOS os clientes (sem filtro)');
+    }
+
+    console.log('📡 [API] Parâmetros da requisição:', params);
+
     this.customerService.list(params).subscribe({
       next: (response) => {
         this.pageResponse = response;
         this.customers = response.customers;
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
+        console.error('Erro ao carregar clientes:', error);
         this.loading = false;
+        this.notification.error('Erro ao carregar clientes');
       }
     });
+  }
+
+  // Método para lidar com mudança do filtro de status
+  onStatusFilterChange(): void {
+    console.log('🔍 [STATUS FILTER] Filtro alterado para:', this.statusFilter);
+    this.currentPage = 0; // Reset para primeira página
+    this.loadCustomers();
   }
 
   openNewCustomerForm(): void {
@@ -686,10 +761,10 @@ export class CustomerListPage implements OnInit {
 
   testCreateCustomerDirect(): void {
     console.log('Testando criação direta de cliente...');
-    
+
     // Primeiro fazer login
     const authService = this.notification; // Inject via component se necessário
-    
+
     // Dados de teste para o cliente
     const testCustomer = {
       nome: 'Cliente Teste Direto',
@@ -698,7 +773,7 @@ export class CustomerListPage implements OnInit {
       telefone: '(11) 99999-9999',
       status: 'ATIVO' as const
     };
-    
+
     // Fazer o POST direto
     this.customerService.create(testCustomer).subscribe({
       next: (response) => {
@@ -724,7 +799,7 @@ export class CustomerListPage implements OnInit {
       cpf: '11122233344',
       password: 'admin123'
     };
-    
+
     // Este seria o login, mas vou simular
     console.log('Simulando login...', authRequest);
     this.notification.error('Funcionalidade de login precisa ser implementada aqui');
@@ -746,7 +821,7 @@ export class CustomerListPage implements OnInit {
     console.log('  Event completo:', event);
     console.log('  Ação:', event.action);
     console.log('  Cliente:', event.row);
-    
+
     if (event.action === 'edit') {
       console.log('Ação EDIT detectada - abrindo formulário');
       this.editingCustomer = event.row;
@@ -772,57 +847,46 @@ export class CustomerListPage implements OnInit {
   }
 
   confirmDelete(): void {
-    console.log('confirmDelete() INICIADO', this.customerToDelete);
-    
-    if (!this.customerToDelete) {
-      console.error('ERRO: Nenhum cliente selecionado para exclusão');
+    if (!this.customerToDelete || this.deleting) {
       return;
     }
-    
-    if (this.deleting) {
-      console.log('JÁ ESTÁ DELETANDO - ignorando clique duplicado');
-      return;
-    }
-    
-    console.log('Definindo deleting = true');
+
     this.deleting = true;
-    
-    const id = typeof this.customerToDelete.id === 'string' 
-      ? parseInt(this.customerToDelete.id) 
+    const customerId = typeof this.customerToDelete.id === 'string'
+      ? parseInt(this.customerToDelete.id)
       : this.customerToDelete.id;
 
-    console.log('ID convertido para número:', id, 'tipo:', typeof id);
-    console.log('Chamando CustomerService.delete()...');
+    this.customerService.delete(customerId).subscribe({
+      next: (deletionResponse) => {
+        // Processamento baseado na resposta estruturada do backend
+        if (deletionResponse.shouldRemoveFromList) {
+          // Remove imediatamente da lista local para feedback visual instantâneo
+          this.customers = this.customers.filter(c => c.id !== customerId);
 
-    const deleteObservable = this.customerService.delete(id);
-    console.log('Observable criado:', deleteObservable);
-    
-    deleteObservable.subscribe({
-      next: (response) => {
-        console.log('SUCESSO! Resposta do backend:', response);
-        console.log('Cliente excluído com sucesso!');
-        this.notification.success('Cliente excluído com sucesso');
-        
-        console.log('Fechando modal (showDeleteConfirm = false)');
-        this.showDeleteConfirm = false;
-        this.customerToDelete = null;
-        this.deleting = false;
-        
-        console.log('Recarregando lista de clientes...');
+          // Atualiza contadores sem fazer nova requisição
+          if (this.pageResponse) {
+            this.pageResponse.totalElements = Math.max(0, this.pageResponse.totalElements - 1);
+          }
+        }
+
+        this.notification.success(deletionResponse.message);
+        this.resetDeleteState();
+
+        // Recarregamento completo para garantir consistência
         this.loadCustomers();
       },
-      error: (err) => {
-        console.error('ERRO ao excluir cliente:', err);
-        console.error('Detalhes do erro:', {
-          status: err.status,
-          statusText: err.statusText,
-          message: err.message,
-          error: err.error
-        });
-        this.notification.error('Erro ao excluir cliente: ' + (err.error?.error || err.message));
+      error: (error) => {
+        console.error('Erro na exclusão:', error);
+        this.notification.error('Erro ao excluir cliente: ' + (error.error?.message || error.message));
         this.deleting = false;
       }
     });
+  }
+
+  private resetDeleteState(): void {
+    this.showDeleteConfirm = false;
+    this.customerToDelete = null;
+    this.deleting = false;
   }
 
   deleteCustomer(id: number): void {
