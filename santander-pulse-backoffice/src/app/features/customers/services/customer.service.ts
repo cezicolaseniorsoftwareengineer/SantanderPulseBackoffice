@@ -4,13 +4,23 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Customer, CustomerCreate, PageResponse } from '../models/customer.model';
 
+// Interface para resposta de exclusão - contrato com backend
+interface CustomerDeletionResponse {
+  customerId: number;
+  customerName: string;
+  action: 'DEACTIVATED' | 'DELETED';
+  message: string;
+  shouldRemoveFromList: boolean;
+  timestamp: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService {
   private baseUrl = environment.apiUrl + '/customers';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   list(params: any = {}): Observable<PageResponse<Customer>> {
     let httpParams = new HttpParams();
@@ -31,10 +41,10 @@ export class CustomerService {
       telefone: customer.telefone,
       status: customer.status
     };
-    
+
     console.log('Enviando dados para API:', customerData);
     console.log('URL:', this.baseUrl);
-    
+
     return this.http.post<Customer>(this.baseUrl, customerData);
   }
 
@@ -42,8 +52,8 @@ export class CustomerService {
     return this.http.put<Customer>(`${this.baseUrl}/${id}`, customer);
   }
 
-  delete(id: number | string): Observable<any> {
-    return this.http.delete<any>(`${this.baseUrl}/${id}`);
+  delete(id: number | string): Observable<CustomerDeletionResponse> {
+    return this.http.delete<CustomerDeletionResponse>(`${this.baseUrl}/${id}`);
   }
 
   findById(id: number | string): Observable<Customer> {
