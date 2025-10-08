@@ -1,6 +1,9 @@
 package com.santander.pulse.infrastructure;
 
-import com.santander.pulse.domain.Customer;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,9 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.santander.pulse.domain.Customer;
 
 /**
  * Repository interface for Customer entity operations.
@@ -87,6 +88,20 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
         @Param("nome") String nome,
         @Param("email") String email,
         @Param("status") Customer.CustomerStatus status,
+        Pageable pageable
+    );
+
+    /**
+     * Find active customers by criteria (default dashboard view)
+     * Following Clean Code principles: method name expresses intent clearly
+     */
+    @Query("SELECT c FROM Customer c WHERE " +
+           "c.status = 'ATIVO' AND " +
+           "(:nome IS NULL OR LOWER(c.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) AND " +
+           "(:email IS NULL OR LOWER(c.email) LIKE LOWER(CONCAT('%', :email, '%')))")
+    Page<Customer> findActiveCustomersByCriteria(
+        @Param("nome") String nome,
+        @Param("email") String email,
         Pageable pageable
     );
 
