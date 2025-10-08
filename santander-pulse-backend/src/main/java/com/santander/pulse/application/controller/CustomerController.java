@@ -205,25 +205,28 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete customer", description = "Delete a customer permanently from the database")
+    @Operation(summary = "Delete customer", description = "Deactivate a customer (soft delete)")
     public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
         try {
-            Optional<Customer> customer = customerRepository.findById(id);
+            Optional<Customer> customerOpt = customerRepository.findById(id);
             
-            if (!customer.isPresent()) {
+            if (!customerOpt.isPresent()) {
                 logger.warn("Customer not found for deletion with ID: {}", id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "Customer not found"));
             }
 
-            // Hard delete: permanently remove customer from database
-            customerRepository.deleteById(id);
+            Customer customer = customerOpt.get();
+            
+            // Soft delete: deactivate customer instead of removing from database
+            customer.deactivate();
+            customerRepository.save(customer);
 
-            logger.info("Customer permanently deleted from database with ID: {}", id);
-            return ResponseEntity.ok(Map.of("message", "Customer deleted successfully"));
+            logger.info("Customer deactivated (soft delete) with ID: {}", id);
+            return ResponseEntity.ok(Map.of("message", "Customer deactivated successfully"));
 
         } catch (Exception e) {
-            logger.error("Error deleting customer {}: {}", id, e.getMessage());
+            logger.error("Error deactivating customer {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Unable to delete customer"));
         }

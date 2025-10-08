@@ -26,9 +26,8 @@ spring:
   application:
     name: santander-pulse-backend
   
-  # H2 Database Configuration
   datasource:
-    url: jdbc:h2:mem:pulsedb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: "jdbc:h2:mem:pulsedb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
     username: pulse_user
     password: pulse_secure_password_2025
     driver-class-name: org.h2.Driver
@@ -49,7 +48,6 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
   
-  # Security Configuration
   security:
     oauth2:
       client:
@@ -58,12 +56,12 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID:demo-google-client-id}
             client-secret: ${GOOGLE_CLIENT_SECRET:demo-google-client-secret}
             scope:
-              - openid
-              - profile
-              - email
+              - "openid"
+              - "profile"
+              - "email"
             client-name: Google
             authorization-grant-type: authorization_code
-            redirect-uri: "${GOOGLE_REDIRECT_URI:http://localhost:8080/api/login/oauth2/code/google}"
+            redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/login/oauth2/code/google}
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
@@ -71,13 +69,11 @@ spring:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
 
-# JWT Configuration
 jwt:
   secret: U2FudGFuZGVyUHVsc2VTZWNyZXRLZXkyMDI1VmVyeVNlY3VyZUFuZEF1dGhlbnRpY0tleUZvckJhbmtpbmdTeXN0ZW0=
-  expiration: 86400000 # 24 hours
-  refresh-expiration: 604800000 # 7 days
+  expiration: 86400000
+  refresh-expiration: 604800000
 
-# Logging Configuration
 logging:
   level:
     com.santander.pulse: INFO
@@ -86,9 +82,7 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
-# Management and Actuator
 management:
   endpoints:
     web:
@@ -96,9 +90,8 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: when_authorized
 
-# API Documentation
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -107,7 +100,6 @@ springdoc:
     operationsSorter: method
     disable-swagger-default-url: true
 
-# Banking Validation
 banking:
   validation:
     cpf:
