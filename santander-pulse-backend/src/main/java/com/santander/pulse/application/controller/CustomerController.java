@@ -1,13 +1,12 @@
 package com.santander.pulse.application.controller;
 
-import com.santander.pulse.application.dto.CustomerRequest;
-import com.santander.pulse.application.dto.CustomerResponse;
-import com.santander.pulse.domain.Customer;
-import com.santander.pulse.infrastructure.CustomerRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -16,14 +15,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.santander.pulse.application.dto.CustomerDeletionResponse;
+import com.santander.pulse.application.dto.CustomerRequest;
+import com.santander.pulse.application.dto.CustomerResponse;
+import com.santander.pulse.domain.Customer;
+import com.santander.pulse.infrastructure.CustomerRepository;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 /**
  * Customer controller for CRUD operations with banking validations.
@@ -59,19 +70,16 @@ public class CustomerController {
                        Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             Pageable pageable = PageRequest.of(page, size, sort);
 
-            Page<Customer> customerPage = customerRepository.findByCriteria(nome, email, status, pageable);
+            Page<Customer> customerPage = shouldShowActiveCustomersOnly(status) 
+                ? customerRepository.findActiveCustomersByCriteria(nome, email, pageable)
+                : customerRepository.findByCriteria(nome, email, status, pageable);
             
             List<CustomerResponse> customers = customerPage.getContent()
                 .stream()
                 .map(CustomerResponse::fromEntity)
                 .collect(Collectors.toList());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("customers", customers);
-            response.put("currentPage", customerPage.getNumber());
-            response.put("totalElements", customerPage.getTotalElements());
-            response.put("totalPages", customerPage.getTotalPages());
-            response.put("pageSize", customerPage.getSize());
+            Map<String, Object> response = buildCustomerResponse(customerPage, customers, page);
 
             logger.info("Retrieved {} customers (page {}/{})", 
                        customers.size(), page + 1, customerPage.getTotalPages());
@@ -83,6 +91,29 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Unable to retrieve customers"));
         }
+    }
+
+    /**
+     * Clean Code principle: Extract method to express business rule clearly
+     * By default, dashboard shows only active customers unless explicitly filtered
+     */
+    private boolean shouldShowActiveCustomersOnly(Customer.CustomerStatus status) {
+        return status == null;
+    }
+
+    /**
+     * Clean Code principle: Extract method to reduce complexity and improve readability
+     */
+    private Map<String, Object> buildCustomerResponse(Page<Customer> customerPage, 
+                                                     List<CustomerResponse> customers, 
+                                                     int page) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("customers", customers);
+        response.put("currentPage", customerPage.getNumber());
+        response.put("totalElements", customerPage.getTotalElements());
+        response.put("totalPages", customerPage.getTotalPages());
+        response.put("pageSize", customerPage.getSize());
+        return response;
     }
 
     @GetMapping("/{id}")
@@ -206,29 +237,31 @@ public class CustomerController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete customer", description = "Deactivate a customer (soft delete)")
-    public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
+    public ResponseEntity<CustomerDeletionResponse> deleteCustomer(@PathVariable Long id) {
         try {
             Optional<Customer> customerOpt = customerRepository.findById(id);
             
             if (!customerOpt.isPresent()) {
                 logger.warn("Customer not found for deletion with ID: {}", id);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Customer not found"));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
 
             Customer customer = customerOpt.get();
+            String customerName = customer.getNome();
             
             // Soft delete: deactivate customer instead of removing from database
             customer.deactivate();
             customerRepository.save(customer);
 
             logger.info("Customer deactivated (soft delete) with ID: {}", id);
-            return ResponseEntity.ok(Map.of("message", "Customer deactivated successfully"));
+            
+            // Retorna resposta estruturada que informa ao frontend como proceder
+            CustomerDeletionResponse response = CustomerDeletionResponse.softDelete(id, customerName);
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             logger.error("Error deactivating customer {}: {}", id, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Unable to delete customer"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
